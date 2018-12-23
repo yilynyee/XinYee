@@ -1,0 +1,1901 @@
+//MTS3013 GROUP-B
+//Semester 1 2018/2019
+
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <fstream>
+using namespace std;
+
+//function prototype
+int mainmenu();
+void transaction();
+void customer();
+void vendor();
+void product();
+
+//Transactions
+void buy();
+void sell();
+void inventory(string produk_no, int nilai_inventori);
+void totalSales(double jualan);
+void totalPurchase(double belian);
+void displayTotalSales();
+void displayTotalPurchase();
+
+//customers
+void cus_Add();
+void cus_Display();
+void cus_Edit();
+void cus_Delete();
+
+//vendors
+void ven_Add();
+void ven_Display();
+void ven_Edit();
+void ven_Delete();
+
+//products
+void product_Add();
+void product_Display();	//inventory value
+void product_Edit();
+void product_Delete();
+
+//----------------------------------------------------------------------------------------------------------
+int main()
+{
+	mainmenu();
+	
+	return 0;
+}//end of main function
+
+int mainmenu()
+{
+	//declare constant and variable
+	int choice = 0;
+	
+	//Main menu select
+	cout << endl;
+	cout << "[1] Transaction " << endl;
+	cout << "[2] Customer " << endl;
+	cout << "[3] Vendor " << endl;
+	cout << "[4] Product " << endl;
+	cout << "[5] Exit " << endl;
+	cout << "Please select: ";
+	cin >> choice;
+	
+	if (choice == 1)
+		transaction();
+	else if (choice == 2)
+		customer();
+	else if (choice == 3)
+		vendor();
+	else if (choice == 4)
+		product();
+	//end if
+
+}//end of main menu function
+
+//-----------------------------------------------------------------------------------------------------------
+void transaction()
+{
+	//declare constant and variable
+	int choice = 0;
+	
+	//transaction menu
+	cout << endl;
+	cout << "[1] Sell Product" << endl;
+	cout << "[2] Buy Product" << endl;
+	cout << "[3] Display Total Sales" << endl;
+	cout << "[4] Display Total Purchase" << endl;
+	cout << "[5] Back" << endl;
+	cout << "Please select: ";
+	cin >> choice;
+	
+	//transaction menu
+	if (choice == 1)
+		sell();
+	else if (choice == 2)
+		buy();
+	else if (choice == 3)
+		displayTotalSales();
+	else if (choice == 4)
+		displayTotalPurchase();
+	else if (choice == 5)
+		mainmenu();
+	//end if
+		
+}//end of transaction function
+
+
+void sell()
+{
+	//declare constant and variable
+	//product
+	string product_code = "";
+	string product_name = "";
+	double product_price = 0.0;
+	double product_cost = 0.0;
+	int inventory_quantity = 0;
+	
+	//Calculate
+	string selected_product = "";
+	string selected_customer = "";
+	int quantity = 0;
+	double discount_rate = 0.0;
+	double discount = 0.0;
+	const double SST = 0.1;
+	double tax = 0.0;
+	double subtotal = 0;
+	double total = 0.0;
+	int choice_no = 0;
+	char choice = ' ';
+	
+	//customer 
+	string customer_code = "";
+	string customer_name = "";
+	string customer_id = "";
+	string customer_bank = "";
+	string customer_bankNum = "";
+	char membership = ' ';
+
+	//bank
+	string paymentMethod = "";
+	string bank_reference = "";
+	
+	//file
+	ifstream inProductFile;
+	ofstream outProductFile;
+	ifstream inCustomerProfile;
+
+	
+	//display product
+	cout << endl;
+	product_Display();
+	
+	//Select product
+	cout << endl << "Please enter Product code: ";
+	cin >> selected_product;
+	
+	//open file and collect data from file
+	inProductFile.open("Product.txt", ios::app);
+	//determine whether file is opened
+	if (inProductFile.is_open())
+	{	
+		getline(inProductFile, product_code, '#');
+		getline(inProductFile, product_name, '#');
+		inProductFile >> product_price;
+		inProductFile.ignore();
+		inProductFile >> product_cost;
+		inProductFile.ignore();
+		inProductFile >> inventory_quantity;
+		inProductFile.ignore();
+			
+		while (selected_product != product_code)
+		{
+			getline(inProductFile, product_code, '#');
+			getline(inProductFile, product_name, '#');
+			inProductFile >> product_price;
+			inProductFile.ignore();
+			inProductFile >> product_cost;
+			inProductFile.ignore();
+			inProductFile >> inventory_quantity;
+			inProductFile.ignore();
+		}//end while
+		inProductFile.close();
+	}
+	else 
+		cout << "Product.txt could not be opened" << endl;
+	//end if 
+	
+	//enter quantity of product
+	cout << "Enter quantity of product: ";
+	cin >> quantity;
+	
+	//display customer
+	cout << endl;
+	cus_Display();
+	
+	//select customer
+	cout << endl << "Select customer: ";
+	cin >> selected_customer;	
+	
+	//open file
+	inCustomerProfile.open("CustomerProfile.txt", ios::in);
+	//determine whether file is opened
+	if (inCustomerProfile.is_open())
+	{
+		getline(inCustomerProfile, customer_code, '#');
+		getline(inCustomerProfile, customer_name, '#');
+		getline(inCustomerProfile, customer_id, '#');
+		getline(inCustomerProfile, customer_bank, '#');	
+		getline(inCustomerProfile, customer_bankNum, '#');
+		inCustomerProfile >> membership;
+		inCustomerProfile.ignore();
+		
+		while (selected_customer != customer_code)
+		{
+			getline(inCustomerProfile, customer_code, '#');
+			getline(inCustomerProfile, customer_name, '#');
+			getline(inCustomerProfile, customer_id, '#');
+			getline(inCustomerProfile, customer_bank, '#');	
+			getline(inCustomerProfile, customer_bankNum, '#');
+			inCustomerProfile >> membership;
+			inCustomerProfile.ignore();
+ 		}//end while
+		inCustomerProfile.close();
+	}
+	else 
+		cout << "CustomerProfile.txt could not be opened" << endl;
+	//end if 
+
+	//determine membership
+	if (membership == 'Y')
+	{
+		cout << "Customer is a member, enter discount? [Y/N]: ";
+		cin >> choice;
+		choice = toupper(choice);
+		if(choice == 'Y')
+		{
+			cout << "Enter discount rate (decimal point): ";
+			cin >> discount_rate;
+		}//end if
+	}//end if
+	
+	//calculate and print receipt
+	subtotal = product_price * static_cast<double>(quantity);
+	discount = subtotal * discount_rate;
+	tax = subtotal * SST;
+	total = subtotal - discount + tax;
+	inventory_quantity -= quantity;
+	
+	//determine payment method
+	cout << endl << "Select payment method" << endl;
+	cout << "1 Credit Card" << endl;
+	cout << "2 Online Banking" << endl;
+	cout << "3 Cash" << endl;
+	cin >> choice;
+	do
+	{
+		if (choice == '1')
+		{
+			cout << "Enter reference number: ";
+			cin >> bank_reference;
+			paymentMethod = "Credit Card";
+		}
+		else if (choice == '2')
+		{
+			cout << "Enter reference number: ";
+			cin >> bank_reference;
+			paymentMethod = "Online Banking";
+		}
+		else if (choice == '3')
+		{
+			bank_reference = "-";
+			paymentMethod = "Cash";
+		}
+		//end if
+	}while(choice != '1' && choice != '2' && choice != '3');
+	
+	//display receipt
+	cout << endl;
+	cout << "---------------------------------------------RECEIPT-----------------------------------------------------" << endl;
+	cout << "Customer Name \t: " << customer_name << endl;
+	cout << "Customer ID \t: " << customer_id << endl << endl;
+	cout << "Product Code \t: " << product_code << endl;
+	cout << "Product Name \t: " << product_name << endl;
+	cout << "Product Price \t: RM" << product_price << endl;
+	cout << "Quantity \t: " << quantity << endl << endl;
+	cout << "Subtotal \t: RM" << subtotal << endl;
+	cout << "Discount Rate \t:" << fixed << setprecision(0) << discount_rate*100  << "%"<< endl;
+	cout << "SST(10%) \t:RM" << fixed << setprecision(2) << tax << endl;
+	cout << "Total \t\t: RM" << total << endl;
+	cout << "Pay by \t\t:" << paymentMethod << " (Reference No: " << bank_reference << ")" << endl;
+	cout << "------------------------------------------------------------------------------------------------------" << endl;
+	
+	//update inventory value
+	inventory(product_code, inventory_quantity);
+	
+	//update totalSales value
+	totalSales(total);
+	
+	//Remind inventory value is less
+	if (inventory_quantity < 10)
+	{
+		cout << "----------------------------------------------------------------------------------------------------------" << endl;
+		cout << "Product Code " << product_code << "-" << product_name << " low-in-stock: only " << inventory_quantity << " remaining " << endl;
+		cout << "Proceed to buy product? [Y/N]: ";
+		cin >> choice;
+		choice = toupper(choice);
+		if (choice == 'Y')
+		{
+			cout << endl;
+			buy();
+		}else
+			cout << "Please purchase low-in-stock product as soon as possible " << endl;
+	}//end if
+	
+	mainmenu();
+}//end of sell function
+
+
+void buy()
+{
+	//declare constant and variable
+	//product
+	string product_code = "";
+	string product_name = "";
+	double product_price = 0.0;
+	double product_cost = 0.0;
+	int inventory_quantity = 0;
+	
+	//vendor
+	string vendor_code = "";
+	string vendor_name = "";
+	string vendor_companyName = "";
+	string vendor_license = "";
+	string vendor_id = "";
+	char membership = ' ';
+	
+	//product
+	string selected_product = "";
+	string selected_vendor = "";
+	int quantity = 0;
+	double discount_rate = 0.0;
+	double discount = 0.0;
+	const double SST = 0.1;
+	double tax = 0.0;
+	double subtotal = 0;
+	double total = 0.0;
+	int choice_no = 0;
+	char choice = ' ';
+	
+	//bank
+	string paymentMethod = "";
+	string bank_reference = "";
+	
+	//file
+	ifstream inProductFile;
+	ofstream outProductFile;
+	ifstream inVendorProfile;
+	
+	//display product
+	cout << endl;
+	product_Display();
+	
+	//Select product
+	cout << endl << "Please enter Product code: ";
+	cin >> selected_product;
+	
+	//open file and collect data from file
+	inProductFile.open("Product.txt", ios::app);
+	//determine whether file is opened
+	if (inProductFile.is_open())
+	{	
+		getline(inProductFile, product_code, '#');
+		getline(inProductFile, product_name, '#');
+		inProductFile >> product_price;
+		inProductFile.ignore();
+		inProductFile >> product_cost;
+		inProductFile.ignore();
+		inProductFile >> inventory_quantity;
+		inProductFile.ignore();
+			
+		while (selected_product != product_code)
+		{
+			getline(inProductFile, product_code, '#');
+			getline(inProductFile, product_name, '#');
+			inProductFile >> product_price;
+			inProductFile.ignore();
+			inProductFile >> product_cost;
+			inProductFile.ignore();
+			inProductFile >> inventory_quantity;
+			inProductFile.ignore();
+		}//end while
+		inProductFile.close();
+	}
+	else 
+		cout << "Product.txt could not be opened" << endl;
+	//end if 
+	
+	//enter quantity of product
+	cout << "Enter quantity of product: ";
+	cin >> quantity;
+	
+	//displayvendor
+	cout << endl;
+	ven_Display();
+	
+	//select customer
+	cout << endl << "Select vendor: ";
+	cin >> selected_vendor;
+	
+	//open file
+	inVendorProfile.open("VendorProfile.txt", ios::in);
+	
+	//determine whether file is opened
+	if (inVendorProfile.is_open())
+	{
+		getline(inVendorProfile, vendor_code, '#');
+		getline(inVendorProfile, vendor_name, '#');
+		getline(inVendorProfile, vendor_companyName, '#');
+		getline(inVendorProfile, vendor_license, '#');
+		getline(inVendorProfile, vendor_id, '#');
+		inVendorProfile >> membership;
+		inVendorProfile.ignore();
+		
+		while (selected_vendor != vendor_code)
+		{
+			getline(inVendorProfile, vendor_code, '#');
+			getline(inVendorProfile, vendor_name, '#');
+			getline(inVendorProfile, vendor_companyName, '#');
+			getline(inVendorProfile, vendor_license, '#');
+			getline(inVendorProfile, vendor_id, '#');
+			inVendorProfile >> membership;
+			inVendorProfile.ignore();
+		}//end while
+		inVendorProfile.close();
+	}
+	else 
+		cout << "VendorProfile.txt could not be opened" << endl;
+	//end if 
+	
+	//determine membership
+	if(membership == 'Y')
+	{
+		cout << "Member of " << vendor_companyName << ", discount rate given? [Y/N]: ";
+		cin >> choice;
+		choice = toupper(choice);
+		if(choice == 'Y')
+		{
+			cout << "Enter discount rate (decimal point): ";
+			cin >> discount_rate;
+		}//end if
+	}//end if
+	
+	//determine payment method
+	cout << endl << "Select payment method" << endl;
+	cout << "1 Credit Card" << endl;
+	cout << "2 Cash" << endl;
+	cin >> choice;
+	do
+	{
+		if (choice == '1')
+		{
+			cout << "Enter reference number: ";
+			cin >> bank_reference;
+			paymentMethod = "Credit Card";
+		}
+		else if (choice == '2')
+		{
+			bank_reference = "-";
+			paymentMethod = "Cash";
+		}
+		//end if
+	}while(choice != '1' && choice != '2');
+	
+	subtotal = product_cost * static_cast<double>(quantity);
+	discount = subtotal * discount_rate;
+	tax = subtotal * SST;
+	total = subtotal - discount + tax;
+	inventory_quantity += quantity;
+
+	//display receipt
+	cout << endl;
+	cout << "---------------------------------------------INVOICE-------------------------------------------------" << endl;
+	cout << "Vendor Name \t\t: " << vendor_name << endl;
+	cout << "Vendor Company Name \t: " << vendor_companyName << endl;
+	cout << "Vendor License \t\t: " << vendor_license << endl;
+	cout << "Vendor ID \t\t: " << vendor_id << endl << endl;
+	cout << "Product Code \t\t: " << product_code << endl;
+	cout << "Product Name \t\t: " << product_name << endl;
+	cout << "Product Cost \t\t: RM" << product_cost << endl;
+	cout << "Quantity \t\t: " << quantity << endl << endl;
+	cout << "Subtotal \t\t: RM" << subtotal << endl;
+	cout << "Discount Rate \t\t: " << fixed << setprecision(0) << discount_rate*100  << "%" << endl;
+	cout << "SST(10%) \t\t: RM" << fixed << setprecision(2) << tax << endl;
+	cout << "Total \t\t\t: RM" << fixed << setprecision(2) << total << endl;
+	cout << "Pay by: " << paymentMethod << " (Reference No: " << bank_reference << ")" << endl;
+	cout << "-----------------------------------------------------------------------------------------------------" << endl;
+	
+	//update inventory
+	inventory(product_code, inventory_quantity);
+	
+	//update total purchase of the day
+	totalPurchase(total);
+	
+	mainmenu();
+}//end of buy function
+
+
+void inventory(string kod_produk, int nilai_inventori)
+{
+	string product_code = "";
+	string product_name = "";
+	double product_price = 0.0;
+	double product_cost = 0.0;
+	int inventory_quantity = 0;
+	
+	//array
+	string code_array[100] = {};
+	string name_array[100] = {};
+	double price_array[100] = {};
+	double cost_array[100] = {};
+	int inventory_array[100] = {};
+
+	//variable for selecting product
+	int total_product = 0;
+	string display_product = "";
+	int x = 0;	//subcript of the selected product
+	
+	ifstream inProductFile;
+	ofstream outProductFile;
+	
+	//open file and read product into array
+	inProductFile.open("Product.txt", ios::app);
+	
+	//determine whether file is opened
+	if (inProductFile.is_open())
+	{
+		//read data into variable
+		getline(inProductFile, product_code, '#');
+		getline(inProductFile, product_name, '#');
+		inProductFile >> product_price;
+		inProductFile.ignore();
+		inProductFile >> product_cost;
+		inProductFile.ignore();
+		inProductFile >> inventory_quantity;
+		inProductFile.ignore();
+			
+		while (!inProductFile.eof())
+		{
+			//write data into array
+			code_array[total_product] = product_code;
+			name_array[total_product] = product_name;
+			price_array[total_product] = product_price;
+			cost_array[total_product] = product_cost;
+			inventory_array[total_product] = inventory_quantity;
+			total_product++;
+			
+			getline(inProductFile, product_code, '#');
+			getline(inProductFile, product_name, '#');
+			inProductFile >> product_price;
+			inProductFile.ignore();
+			inProductFile >> product_cost;
+			inProductFile.ignore();
+			inProductFile >> inventory_quantity;
+			inProductFile.ignore();
+		}//end while
+		inProductFile.close();
+	}
+	else 
+		cout << "Product.txt could not be opened" << endl;
+	//end if 
+	
+	//determine the subscript of product
+	do
+	{
+		display_product = code_array[x];
+		x++;	//subscript
+	}while(kod_produk != display_product);
+	
+	inventory_array[x-1] = nilai_inventori;
+	
+	//rewrite data from array into file
+	//open file for append
+	outProductFile.open("Product.txt", ios::out);
+	//determine whether file is opened
+	if (outProductFile.is_open())
+	{
+		for(int y=0; y!=total_product; y++)
+		{
+			//write data into Product File
+			outProductFile << code_array[y] << "#" <<  name_array[y] << "#" << price_array[y] << "#" << cost_array[y] << "#" << inventory_array[y] << endl;
+		}//end for
+		//close file
+		outProductFile.close();
+	}
+	else
+		cout << "Product.txt file could not be opened" << endl;
+	//end if
+}//end of inventory function
+
+
+void totalSales(double jualan)
+{
+	//declare constant and variable
+	double totalSalesofDay = 0.0;
+	ifstream inTotalSalesFile;
+	ofstream outTotalSalesFile;
+	
+	//collect data from file
+	inTotalSalesFile.open("TotalSales.txt", ios::in);
+	if (inTotalSalesFile.is_open())
+	{
+		inTotalSalesFile >> totalSalesofDay;
+		inTotalSalesFile.close();
+	}
+	else
+		cout << "TotalSales.txt could not be opened" << endl;
+	//end if
+	
+	//calculate total sales
+	totalSalesofDay += jualan;
+	
+	//open and write total sales into file;
+	outTotalSalesFile.open("TotalSales.txt", ios::out);
+	if (outTotalSalesFile.is_open())
+	{
+		outTotalSalesFile << totalSalesofDay << endl;		
+		outTotalSalesFile.close();
+	}
+	else
+		cout << "TotalSales.txt could not be opened" << endl;
+	//end if
+}//end of totalSales function
+
+void displayTotalSales()
+{
+	//declare constant and variable
+	double totalSalesofDay = 0.0;
+	ifstream inTotalSalesFile;
+
+	//open and read total sales from file;
+	inTotalSalesFile.open("TotalSales.txt", ios::in);
+	
+	if (inTotalSalesFile.is_open())
+	{
+		inTotalSalesFile >> totalSalesofDay;
+		inTotalSalesFile.close();
+	}
+	else
+		cout << "TotalSales.txt could not be opened" << endl;
+	//end if
+	
+	cout << "------------------------------------------------------------------------------" << endl;
+	cout << "Total Sales of today: RM" << fixed << setprecision(2) << totalSalesofDay << endl;
+	cout << "------------------------------------------------------------------------------" << endl;
+	
+	mainmenu();
+}//end of displaytotalSales function
+
+
+void totalPurchase(double belian)
+{
+	//declare constant and variable
+	double totalPurchaseofDay = 0.0;
+	ofstream outTotalPurchaseFile;
+	ifstream inTotalPurchaseFile;
+	
+	//collect data from file
+	inTotalPurchaseFile.open("TotalPurchase.txt", ios::in);
+	if(inTotalPurchaseFile.is_open())
+	{
+		inTotalPurchaseFile >> totalPurchaseofDay;
+		inTotalPurchaseFile.close();
+	}
+	else
+		cout << "TotalPurchase.txt could not be opened" << endl;
+	//end if
+	
+	//calculate total purchase
+	totalPurchaseofDay += belian;
+	
+	//open and write total purchase into file;
+	outTotalPurchaseFile.open("TotalPurchase.txt", ios::out);
+	
+	if (outTotalPurchaseFile.is_open())
+	{
+		outTotalPurchaseFile << totalPurchaseofDay;	
+		outTotalPurchaseFile.close();
+	}
+	else
+		cout << "TotalPurchase.txt could not be opened" << endl;
+	//end if
+}//end of totalSales function
+
+void displayTotalPurchase()
+{
+	double totalPurchaseofDay = 0.0;
+	ifstream inTotalPurchaseFile;
+	
+	//open and read total purchase from file;
+	inTotalPurchaseFile.open("TotalPurchase.txt", ios::in);
+	if (inTotalPurchaseFile.is_open())
+	{
+		inTotalPurchaseFile >> totalPurchaseofDay;
+		inTotalPurchaseFile.close();
+	}
+	else
+		cout << "TotalPurchaseFile.txt could not be opened" << endl;
+	//end if
+	
+	cout << "------------------------------------------------------------------------------" << endl;
+	cout << "Total Purchase of today: RM" << fixed << setprecision(2) << totalPurchaseofDay << endl;
+	cout << "------------------------------------------------------------------------------" << endl;
+	
+	mainmenu();
+}//end of displayTotalPurchase function
+
+//------------------------------------------------------------------------------------------------------------
+void customer()
+{
+	//declare constant and variable
+	int choice = 0;
+	
+	//customer menu
+	cout << endl;
+	cout << "[1] Add Customer " << endl;
+	cout << "[2] Display Customer " << endl;
+	cout << "[3] Edit Customer " << endl;
+	cout << "[4] Delete Customer " << endl;
+	cout << "[5] Back" << endl;
+	cout << "Please select: " << endl;
+	cin >> choice;
+	
+	if (choice == 1)
+		cus_Add();
+	else if (choice == 2)
+		cus_Display();
+	else if (choice == 3)
+		cus_Edit();
+	else if (choice == 4)
+		cus_Delete();
+	else if (choice == 5)
+		mainmenu();
+	else
+		cout << "Invalid!!" << endl;
+	//end if
+	
+	mainmenu();
+}//end of customer function
+
+void cus_Add()
+{
+	//declare constant and variable
+	string customer_code = "";
+	string customer_name = "";
+	string customer_id = "";
+	string customer_bank = "";
+	string customer_bankNum = "";
+	char membership = ' ';
+	ofstream outCustomerProfile;
+	
+	//open customer profile to write
+	outCustomerProfile.open("CustomerProfile.txt", ios::app);
+	
+	//determine file is opened
+	if(outCustomerProfile.is_open())
+	{
+		cout << "Enter Customer code (X to stop): ";
+		cin >> customer_code;	
+		
+		while(customer_code != "x" && customer_code != "X")
+		{
+			cout << "Enter Customer name: ";
+			cin >> customer_name;		
+			cin.ignore(100, '\n');	
+			cout << "Enter Customer ID:";
+			cin >> customer_id;
+			cin.ignore(100, '\n');
+			cout << "Enter Customer Bank:";
+			cin >> customer_bank;
+			cin.ignore(100, '\n');
+			cout << "Enter Customer Bank Account Number:";
+			cin >> customer_bankNum;
+			cin.ignore(100, '\n');
+			cout << "Membership [Y/N]: ";
+			cin >> membership;
+			membership = toupper(membership);
+			if(membership != 'Y' && membership != 'N')
+			{
+				cout << "Invalid membership! " << endl;
+				do
+				{
+					cout << "Membership [Y/N]: ";
+					cin >> membership;
+					membership = toupper(membership);
+				}while(membership != 'Y' && membership != 'N');
+			}//end if
+			
+			//write data into CustomerProfile.txt
+			outCustomerProfile << customer_code << "#" << customer_name << "#" << customer_id << "#"  << customer_bank << "#" << customer_bankNum << "#" << membership << endl;
+				
+			cout << "Enter Customer code (X to stop): ";
+			cin >> customer_code;		
+		}//end while
+		//close file
+		outCustomerProfile.close();
+	}
+	else
+		cout << "CustomerProfile.txt could not be opened" << endl;
+	//end if 
+
+}//end of cus_add function
+
+
+void cus_Display()
+{
+	//declare constant and variable
+	string customer_code = "";
+	string customer_name = "";
+	string customer_id = "";
+	string customer_bank = "";
+	string customer_bankNum = "";
+	char membership = ' ';
+	ifstream inCustomerProfile;
+	
+	//open file to read
+	inCustomerProfile.open("CustomerProfile.txt", ios::in);
+	
+	//determine whether file is opened
+	if(inCustomerProfile.is_open())
+	{
+		getline(inCustomerProfile, customer_code, '#');
+		getline(inCustomerProfile, customer_name, '#');
+		getline(inCustomerProfile, customer_id, '#');
+		getline(inCustomerProfile, customer_bank, '#');	
+		getline(inCustomerProfile, customer_bankNum, '#');
+		inCustomerProfile >> membership;
+		inCustomerProfile.ignore();
+		
+		cout << "----------------------------------------Customer Profile---------------------------------------------" << endl;
+		
+		while(!inCustomerProfile.eof())
+		{
+			cout << "Customer code \t: " << customer_code << endl;
+			cout << "Name \t\t: " << customer_name << endl;
+			cout << "ID \t\t: " << customer_id << endl;
+			cout << "Bank \t\t: " << customer_bank << endl;
+			cout << "Account Number \t: " << customer_bankNum << endl;
+			cout << "Membership \t: " << membership << endl << endl;
+			
+			getline(inCustomerProfile, customer_code, '#');
+			getline(inCustomerProfile, customer_name, '#');
+			getline(inCustomerProfile, customer_id, '#');
+			getline(inCustomerProfile, customer_bank, '#');	
+			getline(inCustomerProfile, customer_bankNum, '#');
+			inCustomerProfile >> membership;
+			inCustomerProfile.ignore();
+ 		}//end while
+		//close file
+ 		inCustomerProfile.close();
+ 		cout << "-----------------------------------------------------------------------------------------------------" << endl;
+	}
+	else
+		cout << "CustomerProfile.txt could not be opened" << endl;
+	//end if
+}//end of cus_Display function
+
+
+void cus_Edit()
+{
+	//declare constant and variable
+	string customer_code = "";
+	string customer_name = "";
+	string customer_id = "";
+	string customer_bank = "";
+	string customer_bankNum = "";
+	char membership = ' ';
+	
+	//array
+	string code_array[100] = {};
+	string name_array[100] = {};
+	string id_array[100] = {};
+	string bank_array[100] = {};
+	string bankNum_array[100] = {};
+	char membership_array[100] = {};	
+	
+	//variable for selecting customer
+	int total_customer = 0;
+	string selected_customer = "";
+	string display_customer = "";
+	int x = 0;	//subscript of the selected customer
+	int choice = 0;	//select what to edit
+	ifstream inCustomerProfile;
+	ofstream outCustomerProfile;
+	
+	//display customer
+	cus_Display();
+	
+	//open file and write data into array
+	inCustomerProfile.open("CustomerProfile.txt", ios::in);
+	//determine whether file is open
+	if(inCustomerProfile.is_open())
+	{
+		getline(inCustomerProfile, customer_code, '#');
+		getline(inCustomerProfile, customer_name, '#');
+		getline(inCustomerProfile, customer_id, '#');
+		getline(inCustomerProfile, customer_bank, '#');	
+		getline(inCustomerProfile, customer_bankNum, '#');
+		inCustomerProfile >> membership;
+		inCustomerProfile.ignore();
+		
+		while(!inCustomerProfile.eof())
+		{
+			code_array[total_customer] = customer_code;
+			name_array[total_customer] = customer_name;
+			id_array[total_customer] = customer_id;
+			bank_array[total_customer] = customer_bank;
+			bankNum_array[total_customer] = customer_bankNum;
+			membership_array[total_customer] = membership;
+			total_customer++;
+			
+			getline(inCustomerProfile, customer_code, '#');
+			getline(inCustomerProfile, customer_name, '#');
+			getline(inCustomerProfile, customer_id, '#');
+			getline(inCustomerProfile, customer_bank, '#');	
+			getline(inCustomerProfile, customer_bankNum, '#');
+			inCustomerProfile >> membership;
+			inCustomerProfile.ignore();
+		}//end while
+		inCustomerProfile.close();
+	}
+	else
+		cout << "CustomerProfile.txt could not opened" << endl;
+	//end if
+	
+	//select which data to be edit
+	cout << "Please enter customer code you wish to edit: ";
+	cin >> selected_customer;
+	cin.ignore(100, '\n');
+	
+	//determine the subscript of customer
+	do
+	{
+		display_customer = code_array[x];
+		x++;	//subscript
+	}while(selected_customer != display_customer);
+	
+	//select menu
+	cout << "1 Edit Customer Name" << endl;
+	cout << "2 Edit Customer ID" << endl;
+	cout << "3 Edit Customer Bank" << endl;
+	cout << "4 Edit Customer Bank Account Number" << endl;
+	cout << "5 Edit membership" << endl;
+	cout << "6 Back" << endl;
+	cout << "Please select: ";
+	cin >> choice;
+	
+	if(choice == 1)
+	{
+		cout << "Enter new customer name: ";
+		cin >> name_array[x-1];
+	}
+	else if (choice == 2)
+	{
+		cout << "Enter new customer ID: ";
+		cin >> id_array[x-1];
+	}
+	else if (choice == 3)	
+	{
+		cout << "Enter new customer bank: ";
+		cin >> bank_array[x-1];
+	}
+	else if (choice == 4)
+	{
+		cout << "Enter new customer bank account number: ";
+		cin >> bankNum_array[x-1];
+	}
+	else if (choice == 5)
+	{
+		cout << "Enter new membership [Y/N]: ";
+		cin >> membership_array[x-1];
+	}
+	else if (choice == 6)
+		customer();
+	else
+		cout << "Invalid selection" << endl;
+	//end if
+	
+	//write data into file
+	//open file
+	outCustomerProfile.open("CustomerProfile.txt", ios::out);
+	//determine whether file is open
+	if(outCustomerProfile.is_open())
+	{
+		for(int y=0; y!=total_customer; y++)
+		{
+			outCustomerProfile << code_array[y] << "#" << name_array[y] << "#" << id_array[y] << "#" << bank_array[y] << "#" << bankNum_array[y] << "#" << membership_array[y] << endl;
+		}//end for
+		outCustomerProfile.close();
+	}
+	else
+		cout << "CustomerProfile.txt could not be opened" << endl;
+	//end if
+
+}//end of cus_edit function
+
+void cus_Delete()
+{
+	//declare constant and variable
+	string customer_code = "";
+	string customer_name = "";
+	string customer_id = "";
+	string customer_bank = "";
+	string customer_bankNum = "";
+	char membership = ' ';
+	
+	//array
+	string code_array[100] = {};
+	string name_array[100] = {};
+	string id_array[100] = {};
+	string bank_array[100] = {};
+	string bankNum_array[100] = {};
+	char membership_array[100] = {};	
+	
+	//variable for selecting customer
+	int total_customer = 0;
+	string selected_customer = "";
+	string display_customer = "";
+	int x = 0;	//subscript of the selected customer
+	int choice = 0;	//select what to edit
+	ifstream inCustomerProfile;
+	ofstream outCustomerProfile;
+		
+	//display customer
+	cus_Display();
+	
+	//open file and write data into array
+	inCustomerProfile.open("CustomerProfile.txt", ios::in);
+	//determine whether file is open
+	if(inCustomerProfile.is_open())
+	{
+		getline(inCustomerProfile, customer_code, '#');
+		getline(inCustomerProfile, customer_name, '#');
+		getline(inCustomerProfile, customer_id, '#');
+		getline(inCustomerProfile, customer_bank, '#');	
+		getline(inCustomerProfile, customer_bankNum, '#');
+		inCustomerProfile >> membership;
+		inCustomerProfile.ignore();
+		
+		while(!inCustomerProfile.eof())
+		{
+			code_array[total_customer] = customer_code;
+			name_array[total_customer] = customer_name;
+			id_array[total_customer] = customer_id;
+			bank_array[total_customer] = customer_bank;
+			bankNum_array[total_customer] = customer_bankNum;
+			membership_array[total_customer] = membership;
+			total_customer++;
+			
+			getline(inCustomerProfile, customer_code, '#');
+			getline(inCustomerProfile, customer_name, '#');
+			getline(inCustomerProfile, customer_id, '#');
+			getline(inCustomerProfile, customer_bank, '#');	
+			getline(inCustomerProfile, customer_bankNum, '#');
+			inCustomerProfile >> membership;
+			inCustomerProfile.ignore();
+		}//end while
+		inCustomerProfile.close();
+	}
+	else
+		cout << "CustomerProfile.txt could not opened" << endl;
+	//end if
+	
+	//select which data to be edit
+	cout << "Please enter customer code you wish to edit: ";
+	cin >> selected_customer;
+	cin.ignore(100, '\n');
+	
+	//determine the subscript of customer
+	do
+	{
+		display_customer = code_array[x];
+		x++;	//subscript
+	}while(selected_customer != display_customer);
+	
+	//rewrite data from array to file
+	//open file 
+	outCustomerProfile.open("CustomerProfile.txt", ios::out);
+	//determine whether file is open
+	if (outCustomerProfile.is_open())
+	{
+		for (int y=0; y!=total_customer; y++)
+		{
+			//write all vendor profile into a new file except the selected customer
+			if (y!=x-1)		
+			outCustomerProfile << code_array[y] << "#" << name_array[y] << "#" << id_array[y] << "#" << bank_array[y] << "#" << bankNum_array[y] << "#" << membership_array[y] << endl;
+		}//end for
+		//close file
+		outCustomerProfile.close();
+	}
+	else
+		cout << "CustomerProfile.txt could not be opened" << endl;
+	//end if 
+	
+	//display edited product
+	cout << endl << "Data Deleted" << endl;
+	cus_Display();
+	
+}//end of cus_Delete function
+
+//----------------------------------------------------------------------------------------------------------
+void vendor()
+{
+	//declare constant and variable
+	int choice = 0;
+	
+	//vendor menu
+	cout << endl;
+	cout << "[1] Add Vendor" << endl;
+	cout << "[2] Display Vendor " << endl;
+	cout << "[3] Edit Vendor" << endl;
+	cout << "[4] Delete Vendor" << endl;
+	cout << "[5] Back" << endl;
+	cout << "Please select: ";
+	cin >> choice;
+	
+	if (choice == 1)
+		ven_Add();	//call ven_Add function
+	else if (choice == 2)
+		ven_Display();	//call ven_Display function
+	else if (choice == 3)
+		ven_Edit();	//call ven_Edit function
+	else if (choice == 4)
+		ven_Delete();	//call ven_delete function
+	else if (choice == 5)
+		mainmenu();	//return to main menu
+	else
+		cout << "Invalid!!" << endl;
+	//end if
+	
+	mainmenu();
+}//end of vendor function
+
+void ven_Add()
+{
+	//declare constant and variable
+	string vendor_code = "";
+	string vendor_name = "";
+	string vendor_companyName = "";
+	string vendor_license = "";
+	string vendor_id = "";
+	char membership = ' ';
+	ofstream outVendorProfile;
+	
+	//open customer profile to write
+	outVendorProfile.open("VendorProfile.txt", ios::app);
+	
+	//determine file is opened
+	if(outVendorProfile.is_open())
+	{
+		//Enter vendor code
+		cout << "Enter Vendor code (X to stop): ";
+		cin >> vendor_code;
+		
+		while(vendor_code != "x" && vendor_code != "X")
+		{
+			//enter vendor profile
+			cout << "Enter Vendor name (X to stop): ";
+			cin >> vendor_name;
+			cin.ignore(100, '\n');
+			cout << "Enter Vendor Company Name: ";
+			cin >> vendor_companyName;
+			cin.ignore(100, '\n');
+			cout << "Enter License No: ";
+			cin >> vendor_license;
+			cin.ignore(100, '\n');
+			cout << "Enter Vendor ID: ";
+			cin >> vendor_id;
+			cin.ignore(100, '\n');
+			cout << "Membership [Y/N]: ";
+			cin >> membership;
+			membership = toupper(membership);
+			//determine membership validity
+			if(membership != 'Y' && membership != 'N')
+			{
+				cout << "Invalid membership! " << endl;
+				do
+				{
+					cout << "Membership [Y/N]: ";
+					cin >> membership;
+						membership = toupper(membership);
+				}while(membership != 'Y' && membership != 'N');
+			}//end if
+			
+			//write vendor profile into VendorProfile.txt
+			outVendorProfile << vendor_code << "#" << vendor_name << "#" << vendor_companyName << "#" << vendor_license << "#" << vendor_id << "#" << membership << endl;
+			
+			//enter next vendor
+			cout << "Enter Vendor code (X to stop): ";
+			cin >> vendor_code;	
+		}//end while
+		//close file
+		outVendorProfile.close();
+	}
+	else
+		cout << "VendorProfile.txt could not be opened" << endl;
+	//end if 
+
+}//end of ven_add function
+
+void ven_Display()
+{
+	//declare constant and variable
+	string vendor_code = "";
+	string vendor_name = "";
+	string vendor_companyName = "";
+	string vendor_license = "";
+	string vendor_id = "";
+	char membership = ' ';
+	ifstream inVendorProfile;
+	
+	//open file to read
+	inVendorProfile.open("VendorProfile.txt", ios::in);
+	
+	//determine whether file is opened
+	if(inVendorProfile.is_open())
+	{
+		getline(inVendorProfile, vendor_code, '#');
+		getline(inVendorProfile, vendor_name, '#');
+		getline(inVendorProfile, vendor_companyName, '#');
+		getline(inVendorProfile, vendor_license, '#');
+		getline(inVendorProfile, vendor_id, '#');
+		inVendorProfile >> membership;
+		inVendorProfile.ignore();
+		
+		cout << "----------------------------------------Vendor Profile-----------------------------------------------" << endl;
+		
+		while(!inVendorProfile.eof())
+		{
+			cout << "Vendor Code \t: " << vendor_code << endl;
+			cout << "Name \t\t: " << vendor_name << endl;
+			cout << "Company Name \t: " << vendor_companyName << endl;
+			cout << "License No \t: " << vendor_license << endl;
+			cout << "ID \t\t: " << vendor_id << endl;
+			cout << "Membership \t: " << membership << endl << endl;
+			
+			getline(inVendorProfile, vendor_code, '#');
+			getline(inVendorProfile, vendor_name, '#');
+			getline(inVendorProfile, vendor_companyName, '#');
+			getline(inVendorProfile, vendor_license, '#');
+			getline(inVendorProfile, vendor_id, '#');
+			inVendorProfile >> membership;
+			inVendorProfile.ignore();
+ 		}//end while
+
+ 		inVendorProfile.close();
+ 		cout << "-----------------------------------------------------------------------------------------------------" << endl;
+	}
+	else
+		cout << "Product.txt could not be opened" << endl;
+	//end if 
+	
+}//end of ven_display function
+
+
+void ven_Edit()
+{
+	//declare constant and variable
+	//variable for Vendor Profile
+	string vendor_code = "";
+	string vendor_name = "";
+	string vendor_companyName = "";
+	string vendor_license = "";
+	string vendor_id = "";
+	char membership = ' ';
+	
+	//vendor array
+	string code_array[100] = {};
+	string name_array[100] = {};
+	string companyName_array[100] = {};
+	string license_array[100] = {};
+	string id_array[100] = {};
+	char membership_array[100] = {};	
+	
+	//variable for selecting vendor
+	int total_vendor = 0;
+	string selected_vendor = "";
+	string display_vendor = "";
+	int x = 0; //subcript of the selected vendor
+	int choice = 0; //select what to edit	
+	ofstream outVendorProfile;
+	ifstream inVendorProfile;
+	
+	//display vendor
+	ven_Display();
+	
+	//open file to read data into array
+	inVendorProfile.open("VendorProfile.txt", ios::in);
+	//determine whether file is open
+	if(inVendorProfile.is_open())
+	{
+		//read data into variable
+		getline(inVendorProfile, vendor_code, '#');
+		getline(inVendorProfile, vendor_name, '#');
+		getline(inVendorProfile, vendor_companyName, '#');
+		getline(inVendorProfile, vendor_license, '#');
+		getline(inVendorProfile, vendor_id, '#');
+		inVendorProfile >> membership;
+		inVendorProfile.ignore();
+		
+		while (!inVendorProfile.eof())
+		{
+			//write data into array
+			code_array[total_vendor] = vendor_code;
+			name_array[total_vendor] = vendor_name;
+			companyName_array[total_vendor] = vendor_companyName;
+			license_array[total_vendor] = vendor_license;
+			id_array[total_vendor] = vendor_id;
+			membership_array[total_vendor] = membership;
+			total_vendor++;	//calculate the total number of vendor
+			
+			getline(inVendorProfile, vendor_code, '#');
+			getline(inVendorProfile, vendor_name, '#');
+			getline(inVendorProfile, vendor_companyName, '#');
+			getline(inVendorProfile, vendor_license, '#');
+			getline(inVendorProfile, vendor_id, '#');
+			inVendorProfile >> membership;
+			inVendorProfile.ignore();
+		}//end while
+		//close file
+		inVendorProfile.close();
+	}
+	else
+		cout << "VendorProfile.txt could not be opened" << endl;
+	//end if 
+	
+	//Select which vendor to edit
+	cout << "Please enter vendor code you wish to edit: ";
+	cin >> selected_vendor;
+	cin.ignore(100, '\n');
+	
+	//determine the subscript of vendor
+	do
+	{
+		display_vendor = code_array[x];
+		x++;	//subscript
+	}while(selected_vendor != display_vendor);
+	
+	//select menu
+	cout << "1 Edit Vendor Name" << endl;
+	cout << "2 Edit Vendor Company Name" << endl;
+	cout << "3 Edit License" << endl;
+	cout << "4 Edit Vendor ID" << endl;
+	cout << "5 Edit membership" << endl;
+	cout << "6 Back" << endl;
+	cout << "Please select: ";
+	cin >> choice;
+	
+	if(choice == 1)
+	{
+		cout << "Enter new vendor name: ";
+		cin >> name_array[x-1];
+	}
+	else if (choice == 2)
+	{
+		cout << "Enter new company name: ";
+		cin >> companyName_array[x-1];
+	}
+	else if (choice == 3)	
+	{
+		cout << "Enter new license: ";
+		cin >> license_array[x-1];
+	}
+	else if (choice == 4)
+	{
+		cout << "Enter new vendor ID: ";
+		cin >> id_array[x-1];
+	}
+	else if (choice == 5)
+	{
+		cout << "Enter new membership [Y/N]: ";
+		cin >> membership_array[x-1];
+	}
+	else if (choice == 6)
+		vendor();
+	else
+		cout << "Invalid selection!!" << endl;
+	//end if
+	
+	//rewrite data from array to file
+	//open file 
+	outVendorProfile.open("VendorProfile.txt", ios::out);
+	//determine whether file is open
+	if (outVendorProfile.is_open())
+	{
+		for (int y=0; y!=total_vendor; y++)
+		{
+			//write data into VendorProfile File
+			outVendorProfile << code_array[y] << "#" << name_array[y] << "#" << companyName_array[y] << "#" << license_array[y] << "#" << id_array[y] << "#" << membership_array[y] << endl;
+		}//end for
+		//close file
+		outVendorProfile.close();
+	}
+	else
+		cout << "VendorProfile.txt could not be opened" << endl;
+	//end if 
+
+}//end ven_edit function
+
+
+void ven_Delete()
+{
+	//declare constant and variable
+	string selected_vendor = "";
+	string display_vendor = "";
+	string vendor_code = "";
+	string vendor_name = "";
+	string vendor_companyName = "";
+	string vendor_license = "";
+	string vendor_id = "";
+	char membership = ' ';
+	int total_vendor = 0; //x = number of vendor
+	ofstream outVendorProfile;
+	ifstream inVendorProfile;
+	int x = 0; //counter
+	
+	//vendor array
+	string code_array[100] = {};
+	string name_array[100] = {};
+	string companyName_array[100] = {};
+	string license_array[100] = {};
+	string id_array[100] = {};
+	char membership_array[100] = {};
+	
+	//display vendor
+	ven_Display();
+	
+	//open file to read data into array
+	inVendorProfile.open("VendorProfile.txt", ios::in);
+	//determine whether file is open
+	if(inVendorProfile.is_open())
+	{
+		//read data into variable
+		getline(inVendorProfile, vendor_code, '#');
+		getline(inVendorProfile, vendor_name, '#');
+		getline(inVendorProfile, vendor_companyName, '#');
+		getline(inVendorProfile, vendor_license, '#');
+		getline(inVendorProfile, vendor_id, '#');
+		inVendorProfile >> membership;
+		inVendorProfile.ignore();
+		
+		while (!inVendorProfile.eof())
+		{
+			//write data into array
+			code_array[total_vendor] = vendor_code;
+			name_array[total_vendor] = vendor_name;
+			companyName_array[total_vendor] = vendor_companyName;
+			license_array[total_vendor] = vendor_license;
+			id_array[total_vendor] = vendor_id;
+			membership_array[total_vendor] = membership;
+			total_vendor++;	//calculate the total number of vendor
+			
+			getline(inVendorProfile, vendor_code, '#');
+			getline(inVendorProfile, vendor_name, '#');
+			getline(inVendorProfile, vendor_companyName, '#');
+			getline(inVendorProfile, vendor_license, '#');
+			getline(inVendorProfile, vendor_id, '#');
+			inVendorProfile >> membership;
+			inVendorProfile.ignore();
+		}//end while
+		
+		inVendorProfile.close();
+	}
+	else
+		cout << "VendorProfile.txt could not be opened" << endl;
+	//end if 
+	
+	//Select which vendor to delete
+	cout << "Please enter vendor code you wish to delete: ";
+	cin >> selected_vendor;
+	cin.ignore(100, '\n');
+	
+	do
+	{
+		display_vendor = code_array[x];
+		x++;
+		
+	}while(selected_vendor != display_vendor);
+	
+	//rewrite data from array to file
+	//open file 
+	outVendorProfile.open("VendorProfile.txt", ios::out);
+	//determine whether file is open
+	if (outVendorProfile.is_open())
+	{
+		for (int y=0; y!=total_vendor; y++)
+		{
+			//write all vendor profile into a new file except the selected vendor
+			if (y!=x-1)		
+			outVendorProfile << code_array[y] << "#" << name_array[y] << "#" << companyName_array[y] << "#" << license_array[y] << "#" << id_array[y] << "#" << membership_array[y] << endl;
+		}//end for
+		//close file
+		outVendorProfile.close();
+	}
+	else
+		cout << "VendorProfile.txt could not be opened" << endl;
+	//end if 
+		
+	//display deleted vendor
+	cout << endl << "Data Deleted" << endl;
+	ven_Display();
+
+}//end ven_delete function
+
+//----------------------------------------------------------------------------------------------------------
+
+void product()
+{
+	//declare constant and variable
+	int choice = 0;
+	
+	cout << endl;
+	cout << "[1] Add Product " << endl;
+	cout << "[2] Display Product " << endl;
+	cout << "[3] Edit Product " << endl;
+	cout << "[4] Delete Product " << endl;
+	cout << "[5] Back" << endl;
+	cout << "Please select: ";
+	cin >> choice;
+	
+	if (choice == 1)
+		product_Add();
+	else if (choice == 2)
+		product_Display();
+	else if (choice == 3)
+		product_Edit();
+	else if (choice == 4)
+		product_Delete();
+	else if (choice ==5)
+		mainmenu();
+	else
+		cout << "Invalid!!" << endl;
+	//end if
+	
+	mainmenu();
+}//end of product function
+
+
+void product_Add()
+{
+	//declare constant and variable
+	string product_code = "";
+	string product_name = "";
+	double product_price = 0.0;
+	double product_cost = 0.0;
+	int inventory_quantity = 0;
+	ofstream outProductFile;
+
+	//open file for append
+	outProductFile.open("Product.txt", ios::app);
+	
+	//determine whether file is opened
+	if (outProductFile.is_open())
+	{
+		//enter product
+		cout << "Enter product code (X to stop): ";
+		cin >> product_code;
+		while(product_code != "x" && product_code != "X")
+		{
+			cout << "Enter product name (X to stop): ";
+			cin >> product_name;
+			cin.ignore(100, '\n');
+			cout << "Enter product price: ";
+			cin >> product_price;
+			cin.ignore(100, '\n');
+			cout << "Enter product cost: ";
+			cin >> product_cost;
+			cin.ignore(100, '\n');
+			cout << "Enter inventory qauntity: ";
+			cin >> inventory_quantity;
+			cin.ignore(100, '\n');
+			
+			//write data into Product.txt
+			outProductFile << product_code << "#" <<  product_name << "#" << product_price << "#" << product_cost << "#" << inventory_quantity << endl;
+			
+			cout << "Enter product code (X to stop): ";
+			cin >> product_code;
+		}//end while
+		//close file
+		outProductFile.close();
+	}
+	else
+		cout << "Product.txt file could not be opened" << endl;
+	//end if
+}//end of product_Add file
+
+
+void product_Display()
+{
+	//declare constant and variable
+	string product_code = "";
+	string product_name = "";
+	double product_price = 0.0;
+	double product_cost = 0.0;
+	int inventory_quantity = 0;
+	ifstream inProductFile;
+	
+	//open file to read
+	inProductFile.open("Product.txt", ios::in);
+	
+	//determine whether file is opened
+	if (inProductFile.is_open())
+	{
+		getline(inProductFile, product_code, '#');
+		getline(inProductFile, product_name, '#');
+		inProductFile >> product_price;
+		inProductFile.ignore();
+		inProductFile >> product_cost;
+		inProductFile.ignore();
+		inProductFile >> inventory_quantity;
+		inProductFile.ignore();
+		
+		cout << "-------------------------------------------Product---------------------------------------------------" << endl;
+		cout << "Product Code \t \t Product Name \t \t Selling Price \tProduct Cost \tInventory Value" << endl << endl;
+		
+		while (!inProductFile.eof())
+		{	
+			//display product in Product.txt
+			cout << product_code << "\t \t \t " << product_name << "\t \t \t RM";
+			cout << fixed << setprecision(2) << product_price <<  "\t \tRM" << product_cost << "\t \t";
+			cout << inventory_quantity << endl;
+		
+			getline(inProductFile, product_code, '#');
+			getline(inProductFile, product_name, '#');
+			inProductFile >> product_price;
+			inProductFile.ignore();
+			inProductFile >> product_cost;
+			inProductFile.ignore();
+			inProductFile >> inventory_quantity;
+			inProductFile.ignore();
+		}//end while
+		//close file
+		inProductFile.close();
+		cout << "-----------------------------------------------------------------------------------------------------" << endl;
+	}
+	else 
+		cout << "Product.txt could not be opened" << endl;
+	//end if 	
+	
+}//end of product_Display function
+
+
+void product_Edit()
+{
+	//declare constant and variable
+	//product
+	string product_code = "";
+	string product_name = "";
+	double product_price = 0.0;
+	double product_cost = 0.0;
+	int inventory_quantity = 0;
+	
+	//array
+	string code_array[100] = {};
+	string name_array[100] = {};
+	double price_array[100] = {};
+	double cost_array[100] = {};
+	int inventory_array[100] = {};
+
+	//variable for selecting product
+	int total_product = 0;
+	string selected_product = "";
+	string display_product = "";
+	int x = 0;	//subcript of the selected product
+	int choice = 0; //select what to edit
+	ifstream inProductFile;
+	ofstream outProductFile;
+
+	//display product
+	product_Display();
+
+	//open file and read product into array
+	inProductFile.open("Product.txt", ios::app);
+	
+	//determine whether file is opened
+	if (inProductFile.is_open())
+	{
+		//read data into variable
+		getline(inProductFile, product_code, '#');
+		getline(inProductFile, product_name, '#');
+		inProductFile >> product_price;
+		inProductFile.ignore();
+		inProductFile >> product_cost;
+		inProductFile.ignore();
+		inProductFile >> inventory_quantity;
+		inProductFile.ignore();
+			
+		while (!inProductFile.eof())
+		{
+			//write data into array
+			code_array[total_product] = product_code;
+			name_array[total_product] = product_name;
+			price_array[total_product] = product_price;
+			cost_array[total_product] = product_cost;
+			inventory_array[total_product] = inventory_quantity;
+			total_product++;
+			
+			getline(inProductFile, product_code, '#');
+			getline(inProductFile, product_name, '#');
+			inProductFile >> product_price;
+			inProductFile.ignore();
+			inProductFile >> product_cost;
+			inProductFile.ignore();
+			inProductFile >> inventory_quantity;
+			inProductFile.ignore();
+		}//end while
+		inProductFile.close();
+	}
+	else 
+		cout << "Product.txt could not be opened" << endl;
+	//end if 
+		
+	//Select product
+	cout << endl << "Please enter product code: ";
+	cin >> selected_product;
+	cin.ignore(100, '\n');
+	
+	//determine the subscript of product
+	do
+	{
+		display_product = code_array[x];
+		x++;	//subscript
+	}while(selected_product != display_product);
+	
+	//Select menu
+	cout << "1 Edit name" << endl;
+	cout << "2 Edit selling price" << endl;
+	cout << "3 Edit product cost" << endl;
+	cout << "4 Edit inventory value" << endl;
+	cout << "5 Back" << endl;
+	cout << "Please select: ";
+	cin >> choice;
+	
+	if(choice == 1)
+	{
+		cout << "Enter new name: ";
+		cin >> name_array[x-1];
+	}
+	else if (choice == 2)
+	{
+		cout << "Enter new selling price: ";
+		cin >> price_array[x-1];
+	}
+	else if (choice == 3)	
+	{
+		cout << "Enter new product cost: ";
+		cin >> cost_array[x-1];
+	}
+	else if (choice == 4)
+	{
+		cout << "Enter new inventory value: ";
+		cin >> inventory_array[x-1];
+	}
+	else if (choice == 5)
+		product();
+	else
+		cout << "Invalid selection" << endl;
+	//end if
+	
+	//rewrite data from array into file
+	//open file for append
+	outProductFile.open("Product.txt", ios::out);
+	//determine whether file is opened
+	if (outProductFile.is_open())
+	{
+		for(int y=0; y!=total_product; y++)
+		{
+			//write data into Product File
+			outProductFile << code_array[y] << "#" <<  name_array[y] << "#" << price_array[y] << "#" << cost_array[y] << "#" << inventory_array[y] << endl;
+		}//end for
+		//close file
+		outProductFile.close();
+	}
+	else
+		cout << "Product.txt file could not be opened" << endl;
+	//end if
+	
+	//display edited product
+	cout << endl << "Data updated" << endl;
+	product_Display();
+	
+}//end of product_edit function
+
+
+void product_Delete()
+{
+	//declare constant and variable
+	//product
+	string product_code = "";
+	string product_name = "";
+	double product_price = 0.0;
+	double product_cost = 0.0;
+	int inventory_quantity = 0;
+	
+	//array
+	string code_array[100] = {};
+	string name_array[100] = {};
+	double price_array[100] = {};
+	double cost_array[100] = {};
+	int inventory_array[100] = {};
+
+	//variable for selecting product
+	int total_product = 0;
+	string selected_product = "";
+	string display_product = "";
+	int x = 0;	//subcript of the selected product
+	int choice = 0; //select what to edit
+	ifstream inProductFile;
+	ofstream outProductFile;
+
+	//display product
+	product_Display();
+
+	//open file and read product into array
+	inProductFile.open("Product.txt", ios::app);
+	
+	//determine whether file is opened
+	if (inProductFile.is_open())
+	{
+		//read data into variable
+		getline(inProductFile, product_code, '#');
+		getline(inProductFile, product_name, '#');
+		inProductFile >> product_price;
+		inProductFile.ignore();
+		inProductFile >> product_cost;
+		inProductFile.ignore();
+		inProductFile >> inventory_quantity;
+		inProductFile.ignore();
+			
+		while (!inProductFile.eof())
+		{
+			//write data into array
+			code_array[total_product] = product_code;
+			name_array[total_product] = product_name;
+			price_array[total_product] = product_price;
+			cost_array[total_product] = product_cost;
+			inventory_array[total_product] = inventory_quantity;
+			total_product++;
+			
+			getline(inProductFile, product_code, '#');
+			getline(inProductFile, product_name, '#');
+			inProductFile >> product_price;
+			inProductFile.ignore();
+			inProductFile >> product_cost;
+			inProductFile.ignore();
+			inProductFile >> inventory_quantity;
+			inProductFile.ignore();
+		}//end while
+		inProductFile.close();
+	}
+	else 
+		cout << "Product.txt could not be opened" << endl;
+	//end if 
+		
+	//Select product
+	cout << endl << "Please enter product code: ";
+	cin >> selected_product;
+	cin.ignore(100, '\n');
+	
+	//determine the subscript of vendor
+	do
+	{
+		display_product = code_array[x];
+		x++;	//subscript
+	}while(selected_product != display_product);
+	
+	//rewrite data into file
+	//open file for append
+	outProductFile.open("Product.txt", ios::out);
+	
+	//determine whether file is opened
+	if (outProductFile.is_open())
+	{
+		for(int y=0; y!=total_product; y++)
+		{
+			if(y!=x-1)
+			//write data into Product File
+			outProductFile << code_array[y] << "#" <<  name_array[y] << "#" << price_array[y] << "#" << cost_array[y] << "#" << inventory_array[y] << endl;
+		}//end for
+		outProductFile.close();
+	}
+	else
+		cout << "Product.txt file could not be opened" << endl;
+	//end if
+	
+	//display edited product
+	product_Display();
+	
+}//end of product_delete function
